@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 # @Author: Peizhen Li
-# @Desc: None
+# @Desc: subscribe video capture data from Ameca
+
 import asyncio
 import io
 
@@ -12,6 +13,9 @@ from VisualModels.BLIP import blip_analyzer
 from VisualModels.Hiera import video_recognizer
 from Utils.FrameBuffer import FrameBuffer
 import ActionGeneration as ag
+
+subscribe_url = 'tcp://10.6.33.70:5557'   # Ameca host ip
+send_response_url = 'tcp://10.126.110.67:2000'  # local ip
 
 
 context = zmq.asyncio.Context()
@@ -36,9 +40,6 @@ def on_video_rec_task(*args):
 
 
 def on_video_rec_pose_gen_task(*args):
-	if CONF.debug:
-		ts = args[-1]
-		print(f'on video recognition with pose generation task {ts}')
 	action = on_video_rec_task(*args)
 	if action is None:
 		return None
@@ -93,7 +94,7 @@ def run_background_visual_task(msg, full_cb):
 # ==============================
 # TODO should organize these sockets in a tidy way
 resp_socket = context.socket(zmq.PUB)
-resp_socket.bind('tcp://127.0.0.1:20001')
+resp_socket.bind(send_response_url)
 
 
 def on_task_finish_cb(*args, timestamp=b''):  # response has already been encoded
@@ -107,10 +108,11 @@ def on_task_finish_cb(*args, timestamp=b''):  # response has already been encode
 	coroutine.add_done_callback(lambda _: resp_sending_tasks.remove(coroutine))
 	# print(f'msg has been processed!!! {response}')
 
+
 async def run_sub():
 	socket = context.socket(zmq.SUB)
 	# we can connect to several endpoints if we desire, and receive from all
-	socket.connect('tcp://127.0.0.1:2000')
+	socket.connect(subscribe_url)
 	socket.setsockopt(zmq.SUBSCRIBE, b'')
 	while True:
 		msg = await socket.recv_multipart()
@@ -118,6 +120,5 @@ async def run_sub():
 
 
 if __name__ == "__main__":
-	# arg_test(3, 'name')
-	# pass
 	asyncio.run(run_sub())
+

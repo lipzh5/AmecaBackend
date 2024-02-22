@@ -16,7 +16,8 @@ async def run_resp_sub():
 	print('response sub initialized!!!')
 	while True:
 		msg = await socket.recv_multipart()
-		print(f'robot response: {msg[0].decode("utf-8")}, timestamp: {msg[1]}')
+		print('robot response: ', msg)
+		print(f'robot response: {msg[0].decode("utf-8")}, timestamp: {msg[-1]}')
 
 if __name__ == "__main__":
 	asyncio.run(run_resp_sub())

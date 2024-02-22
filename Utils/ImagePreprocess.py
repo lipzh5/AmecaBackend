@@ -5,7 +5,7 @@ import base64
 import os
 
 
-def convert_img_to_stream(img_path=os.path.join(os.getcwd(), '../Assets/image_phone.png')):
+def convert_img_to_stream(img_path=os.path.join(os.getcwd(), '../Assets/img/image_phone.png')):
 	with open(img_path, 'rb') as img_file:
 		encoded = base64.b64encode(img_file.read())
 		# print(type(encoded), len(encoded))
@@ -13,7 +13,7 @@ def convert_img_to_stream(img_path=os.path.join(os.getcwd(), '../Assets/image_ph
 
 
 if __name__ == "__main__":
-	impath = os.path.join(os.getcwd(), '../Assets/image_phone.png')
+	impath = os.path.join(os.getcwd(), '../Assets/img/image_phone.png')
 	encoded = convert_img_to_stream(impath)  # encode
 	from PIL import Image
 	import io
