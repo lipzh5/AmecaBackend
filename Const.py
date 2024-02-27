@@ -8,7 +8,21 @@ IMG_SIZE = (1280, 720)
 
 # visual task types
 class VisualTasks:
+	# PureData = 'PureData'  # pure vcap data
 	VQA = 'VQA'     # TODO str or int?
 	VideoRecognition = 'VideoRec'
 	VideoRecogPoseGen = 'VideoRecPoseGen'  # video recognition with pose generation
 	FaceRecognition = 'FaceRec'
+
+
+def func(*args):
+	print('func args, ', args)
+	pass
+
+if __name__ == "__main__":
+	t = [1,2]
+	s = [3, *t]
+	print(s)
+	# t = (b'hello',)
+	# print(map(lambda x: x.decode(), t))
+	# func('user func', *tuple(map(lambda x: x.decode(), t)))

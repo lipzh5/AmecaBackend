@@ -27,8 +27,8 @@ class BlipImageAnalyzer:
 		out = self.model.generate(**inputs, max_new_tokens=100, min_new_tokens=20)
 		return self.processor.decode(out[0], skip_special_tokens=True)
 
-	def on_vqa_task(self, img_bytes, query: bytes):
-		if CONF.debug:
+	def on_vqa_task(self, img_bytes, query: bytes, debug=False):
+		if debug:
 			decoded = base64.b64decode(img_bytes)  # msg[0] is base64 encoded
 			raw_image = Image.open(io.BytesIO(decoded)).convert('RGB')
 		else:

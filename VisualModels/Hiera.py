@@ -27,12 +27,13 @@ class VideoRecognizer:
 
 	@staticmethod
 	def get_processed_frames(frame_buffer):
+		# use the newest frames
 		frames = np.stack([
-			np.asarray(Image.open(io.BytesIO(base64.b64decode(frame_buffer.buffer_content.popleft()))))
-			for _ in range(HieraConf.n_frames_per_video)
+			np.asarray(Image.open(io.BytesIO(base64.b64decode(frame_buffer.buffer_content[-i-1]))))
+			for i in range(HieraConf.n_frames_per_video)
 		]) if CONF.debug else np.stack([
-			np.asarray(Image.frombytes('RGB', IMG_SIZE, frame_buffer.buffer_content.popleft()))
-			for _ in range(HieraConf.n_frames_per_clip)])
+			np.asarray(Image.frombytes('RGB', IMG_SIZE, frame_buffer.buffer_content[-i-1]))
+			for i in range(HieraConf.n_frames_per_video)])
 
 		frames = torch.tensor(frames).float() / 255
 		frames = torch.stack([frames[i * HieraConf.n_frames_per_clip: (i + 1) * HieraConf.n_frames_per_clip] for i in

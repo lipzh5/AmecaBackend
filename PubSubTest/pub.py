@@ -11,6 +11,7 @@ from Utils import ImagePreprocess
 from Const import *
 import CONF
 import random
+import time
 
 context = zmq.asyncio.Context()
 
@@ -44,9 +45,24 @@ async def run_server(host, port):
 
 		# await socket.send_multipart([str(datetime.datetime.now()).encode()])
 
+
+# updated pure vcap data publish
+def run_server_sync(host, port):
+	ctx = zmq.Context()
+	socket = ctx.socket(zmq.PUB)
+	socket.bind(f'tcp://{host}:{port}')  # use "bind" for publisher and "connect" for subscriber
+	print('publisher initialized!!!')
+	encoding = CONF.encoding
+	while True:
+		time.sleep(0.1)
+		data = [img_bytes, str(datetime.datetime.now()).encode(encoding)]
+		socket.send_multipart(data)
+
+
 if __name__ == "__main__":
+	run_server_sync('127.0.0.1', 2000)
 	# import os
 	# print(os.getcwd())
-	asyncio.run(run_server('127.0.0.1', 2000))
+	# asyncio.run(run_server('127.0.0.1', 2000))
 
 

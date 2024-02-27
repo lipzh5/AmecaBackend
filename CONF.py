@@ -2,9 +2,13 @@
 # @Author: Peizhen Li
 # @Desc: None
 
-debug = True  # whether in debug mode or not
+debug = False  # whether in debug mode or not
 encoding = 'utf-8'
 frame_buffer_max_len = 640
+
+# face recognition
+# try matching face using the newest {face_reg_try_cnt} frames
+face_reg_try_cnt = 10 * 3
 
 
 class HieraConf:

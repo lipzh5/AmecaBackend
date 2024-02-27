@@ -17,4 +17,7 @@ cd hiera
 python setup.py build develop
 # action generation
 pip install openai
+# face recognition-insightface
+pip install onnxruntime-gpu  # or onnxruntime for cpu only inference
+pip install insightface
 ```

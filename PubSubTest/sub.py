@@ -10,7 +10,8 @@ from Const import *
 import CONF
 from VisualModels.BLIP import blip_analyzer
 from VisualModels.Hiera import video_recognizer
-from Utils.FrameBuffer import FrameBuffer
+# from Utils.FrameBuffer import FrameBuffer
+from Utils.FrameBuffer import frame_buffer
 import ActionGeneration as ag
 
 
@@ -18,7 +19,7 @@ context = zmq.asyncio.Context()
 
 visual_tasks = set()
 resp_sending_tasks = set()
-frame_buffer = FrameBuffer()  # TODO add a wrapper may be better to replace this global var
+# frame_buffer = FrameBuffer()  # TODO add a wrapper may be better to replace this global var
 
 
 def on_vqa_task(*args):
@@ -115,6 +116,19 @@ async def run_sub():
 	while True:
 		msg = await socket.recv_multipart()
 		run_background_visual_task(msg, on_task_finish_cb)
+
+
+# updated pure vcap data subscription
+def run_sub_sync():
+	ctx = zmq.Context()
+	socket = ctx.socket(zmq.SUB)
+	socket.connect('tcp://127.0.0.1:2000')
+	socket.setsockopt(zmq.SUBSCRIBE, b'')
+	while True:
+		msg = socket.recv_multipart()
+		img_bytes, ts = msg
+		frame_buffer.append_content(img_bytes)
+		print(f'subscribe ts: {ts}')
 
 
 if __name__ == "__main__":

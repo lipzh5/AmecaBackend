@@ -14,8 +14,9 @@ from VisualModels.Hiera import video_recognizer
 from Utils.FrameBuffer import FrameBuffer
 import ActionGeneration as ag
 
-subscribe_url = 'tcp://10.6.33.70:5557'   # Ameca host ip
-send_response_url = 'tcp://10.126.110.67:2000'  # local ip
+# NOTE: check url if no message recvd
+subscribe_url = 'tcp://10.6.33.4:5556'   # Ameca host ip
+send_response_url = 'tcp://*:2000'  # local ip # 10.126.110.67
 
 
 context = zmq.asyncio.Context()
@@ -29,7 +30,10 @@ def on_vqa_task(*args):
 	if CONF.debug:
 		ts = args[-1]
 		print(f'on vqa task timestamp: {ts}')
-	return blip_analyzer.on_vqa_task(*args[:2])
+	frame_data = frame_buffer.consume_one_frame()
+	if frame_data:
+		return blip_analyzer.on_vqa_task(frame_data, args[0])  # *args[:2]
+	return None
 
 
 def on_video_rec_task(*args):
@@ -56,7 +60,14 @@ def on_video_rec_pose_gen_task(*args):
 def on_face_rec_task(*args):
 	pass
 
+
+def on_vcap_data_recvd(*args):
+	frame_buffer.append_content(args[0])
+	pass
+
+
 TASK_DISPATCHER = {
+	VisualTasks.PureData: on_vcap_data_recvd,
 	VisualTasks.VQA: on_vqa_task,
 	VisualTasks.VideoRecognition: on_video_rec_task,
 	VisualTasks.FaceRecognition: on_face_rec_task,
@@ -67,9 +78,10 @@ TASK_DISPATCHER = {
 def run_background_visual_task(msg, full_cb):
 
 	async def run_task(msg, callback):  # msg: [task_type, img_bytes, xx ]
+		print('run task!!! ')
 		encoding = CONF.encoding
 		task_type = msg[0].decode(encoding)
-		frame_buffer.append_content(msg[1])
+		print('task type: ', task_type)
 		response = TASK_DISPATCHER[task_type](*msg[1:])
 		print(f'on task finish response : {type(response), response}')
 		if response is None:
@@ -79,7 +91,7 @@ def run_background_visual_task(msg, full_cb):
 		# 	params.append(msg[-1])
 		# params = (response.encode(encoding), msg[-1]) if CONF.debug else (response, )
 		callback(*params)
-		await asyncio.sleep(10.)
+		# await asyncio.sleep(1.)
 
 	loop = asyncio.get_event_loop()
 
@@ -88,7 +100,7 @@ def run_background_visual_task(msg, full_cb):
 	)
 	visual_tasks.add(coroutine)
 	coroutine.add_done_callback(lambda _:visual_tasks.remove(coroutine))
-	# print(f'len of visual tasks: {len(visual_tasks)}')
+	print(f'len of visual tasks: {len(visual_tasks)}')
 
 
 # ==============================
@@ -114,11 +126,41 @@ async def run_sub():
 	# we can connect to several endpoints if we desire, and receive from all
 	socket.connect(subscribe_url)
 	socket.setsockopt(zmq.SUBSCRIBE, b'')
+	print('video cap subscriber initialized!!!!')
 	while True:
 		msg = await socket.recv_multipart()
+		# print('len msg: ', len(msg))
 		run_background_visual_task(msg, on_task_finish_cb)
 
 
+ctx = zmq.Context()
+
+def run_sub_sync():
+	socket = ctx.socket(zmq.SUB)
+	socket.connect(subscribe_url)
+	socket.setsockopt(zmq.SUBSCRIBE, b'')
+	print('Video cap subscriber sync initialized!!!')
+	while True:
+		msg = socket.recv_multipart()
+		task_type = msg[0].decode(CONF.encoding)
+		print('task type: ', task_type)
+		if task_type == VisualTasks.PureData:
+			on_vcap_data_recvd(msg[1])
+		else:
+			print(f'visual task: {task_type}')
+			run_background_visual_task(msg, on_task_finish_cb)
+		# print(f'msg recvd: {len(msg[0])}')
+
+
+# def func(*args):
+# 	print(args)
+
+
 if __name__ == "__main__":
-	asyncio.run(run_sub())
+	# msg = ('type', )
+	# t = msg[1:]
+	# print(t)
+	# func(*t)
+	run_sub_sync()
+	# asyncio.run(run_sub())
 
