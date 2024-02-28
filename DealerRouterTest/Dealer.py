@@ -57,7 +57,8 @@ class PubDealer:
 	async def deal_visual_task(self):
 		try:
 			while True:
-				await self.deal_sock.send_multipart([b'what is this in the picture?', str(time.time()).encode()])
+				await self.deal_sock.send_multipart([b'VideoRecogPoseGen'])
+				# await self.deal_sock.send_multipart([b'VQA', b'what is this in the picture?', str(time.time()).encode()])
 				print(f'deal visual task sent111')
 				msg = await self.deal_sock.recv_multipart()
 				print(f'resp recvd222: ', msg)
@@ -98,6 +99,8 @@ async def run_main():
 
 
 if __name__ == "__main__":
+	# pub_dealer = PubDealer()
+	# asyncio.run(pub_dealer.deal_visual_task())
 	asyncio.run(run_main())
 	# loop = asyncio.get_event_loop()
 	# corou = loop.create_task(pub_dealer.deal_visual_task())

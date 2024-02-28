@@ -20,7 +20,7 @@ import base64
 # vsub_addr = 'tcp://10.9.8.164:5001'
 vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = 'tcp://10.126.110.67:2009'
+vtask_deal_addr = 'tcp://10.126.110.67:2006'
 
 ctx = Context.instance()
 
@@ -29,9 +29,9 @@ async def on_vqa_task(*args):
 	frame = frame_buffer.consume_one_frame()  # TODO merge to blip_analyzer
 	if not frame:
 		return None
-	res = await run_vqa_from_client_query(frame, *args)
-	return res
-	# return blip_analyzer.on_vqa_task(frame, *args)
+	# res = await run_vqa_from_client_query(frame, *args)
+	# return res
+	return blip_analyzer.on_vqa_task(frame, *args)
 
 
 async def on_video_reg_task(*args):
@@ -39,11 +39,13 @@ async def on_video_reg_task(*args):
 
 
 async def on_pose_gen_task(*args):
-	human_action = video_recognizer.on_video_recognition_task(frame_buffer)
-	if human_action is None:
-		return None
-	poses = await on_pose_generation(human_action)
-	return [human_action, *poses]
+	return video_recognizer.on_video_rec_posegen_task(frame_buffer)
+	# human_action = video_recognizer.on_video_recognition_task(frame_buffer)
+	# if human_action is None:
+	# 	return None
+
+	# poses = await on_pose_generation(human_action)
+	# return [human_action, *poses]
 
 
 async def on_face_rec_task(*args):
@@ -119,14 +121,12 @@ class SubRouter:
 				print('------')
 				identity = msg[0]
 				print('route visual task identity: ', identity)
-				# await self.router_sock.send_multipart([identity, b'visual task resp'])
-				# ans = await on_vqa_task(msg[1])
-				ans = await self.deal_visual_task(*msg[1:])  # TODO test
+				ans = await self.deal_visual_task(*msg[1:])
 				if ans is None:
 					ans = 'None'
 				print(f'task answer:{ans} \n ------- ')
 				resp = [identity, ]
-				if isinstance(ans, list):
+				if isinstance(ans, list) or isinstance(ans, tuple):
 					resp.extend([item.encode(CONF.encoding) for item in ans])
 				else:
 					resp.append(ans.encode(CONF.encoding))

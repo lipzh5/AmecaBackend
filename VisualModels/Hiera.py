@@ -5,6 +5,7 @@ import base64
 import io
 
 import CONF
+import Const
 from Utils import DataUtils
 import hiera
 from Utils.FrameBuffer import FrameBuffer
@@ -14,6 +15,7 @@ import torch
 from PIL import Image
 import numpy as np
 import torch.nn.functional as F
+import random
 
 CHECK_POINT = 'mae_k400_ft_k400'
 
@@ -51,14 +53,26 @@ class VideoRecognizer:
 		out = self.model(frames)
 		out = out.mean(0)
 		out = out.argmax(dim=-1).item()
-		return id_to_name_map[out]
+		return out  # label of the action
+		# return id_to_name_map[out]
 
 	def on_video_recognition_task(self, frame_buffer):
 		# FrameBuffer.append_content(frame)
 		print(f' video recog frame buffer len: {len(frame_buffer.buffer_content)}')
 		if len(frame_buffer.buffer_content) < HieraConf.n_frames_per_video:
 			return None  # at least on clip for inference
-		return self.recognize_action(frame_buffer)
+		action_label = self.recognize_action(frame_buffer)
+		return id_to_name_map[action_label]
+
+	def on_video_rec_posegen_task(self, frame_buffer):
+		"""return human_action_name and emotion_anim_project"""
+		print(f' video recog frame buffer len: {len(frame_buffer.buffer_content)}')
+		if len(frame_buffer.buffer_content) < HieraConf.n_frames_per_video:
+			return None  # at least on clip for inference
+		action_label = self.recognize_action(frame_buffer)
+		emotion_label = DataUtils.emotion_labels[action_label]
+		return id_to_name_map[action_label], random.choice(EMOTION_TO_ANIM[emotion_label])
+
 
 
 video_recognizer = VideoRecognizer()

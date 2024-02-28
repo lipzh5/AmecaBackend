@@ -52,11 +52,12 @@ class SubRouter:
 
 
 	async def deal_query(self, *args): # TODO replace with actual deal method
-		print(f'backend deal: arg0: {args[0]}, args1: {args[1]}')
+		# print(f'backend deal: arg0: {args[0]}, args1: {args[1]}')
 		# await asyncio.sleep(1.)
 		# TODO dispatch task based on different task type
 		# query = 'please describe this picture'
-		return video_recognizer.on_video_recognition_task(frame_buffer)
+		return video_recognizer.on_video_rec_posegen_task(frame_buffer)
+		# return video_recognizer.on_video_recognition_task(frame_buffer)
 		# frame = frame_buffer.consume_one_frame()
 		# if not frame:
 		# 	return None
@@ -69,7 +70,7 @@ class SubRouter:
 			while True:
 				msg = await self.router_sock.recv_multipart()
 				identity = msg[0]
-				print(f'msg revd: {len(msg)}')
+				print(f'msg revd: {len(msg)}', msg)
 				ans = await self.deal_query(*msg[1:])
 				if ans is None:
 					ans = 'None'
@@ -111,5 +112,7 @@ async def run_main():
 
 
 if __name__ == "__main__":
+	# sub_router = SubRouter()
+	# asyncio.run(sub_router.route_visual_task())
 	# asyncio.run(img_data_router())
 	asyncio.run(run_main())

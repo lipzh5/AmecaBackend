@@ -66,7 +66,8 @@ class FaceEmbdCacheObj:
 FaceEmbdCacheObj.reset()
 
 
-def find_from_db(frame:bytes, ignore_ts=False):
+def find_from_db(frame:bytes, ignore_ts=True):
+	"""if ignore_ts = False, then should check detect interval"""
 	# img_arr = np.asarray(Image.frombytes('RGB', IMG_SIZE, frame))
 	faces = app.get(np.asarray(Image.frombytes('RGB', IMG_SIZE, frame)))  # can be many faces in the current image
 	if not faces:
