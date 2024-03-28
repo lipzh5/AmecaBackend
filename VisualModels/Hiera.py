@@ -3,6 +3,7 @@
 # @Desc: Hiera for action recognition
 import base64
 import io
+from io import BytesIO
 
 import CONF
 import Const
@@ -34,7 +35,8 @@ class VideoRecognizer:
 			np.asarray(Image.open(io.BytesIO(base64.b64decode(frame_buffer.buffer_content[-i-1]))))
 			for i in range(HieraConf.n_frames_per_video)
 		]) if CONF.debug else np.stack([
-			np.asarray(Image.frombytes('RGB', IMG_SIZE, frame_buffer.buffer_content[-i-1]))
+			np.asarray(Image.open(BytesIO(frame_buffer.buffer_content[-i-1])))
+			# np.asarray(Image.frombytes('RGB', IMG_SIZE, frame_buffer.buffer_content[-i-1]))
 			for i in range(HieraConf.n_frames_per_video)])
 
 		frames = torch.tensor(frames).float() / 255

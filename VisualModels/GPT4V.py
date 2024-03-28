@@ -11,6 +11,7 @@ import time
 import base64
 from PIL import Image
 import io
+from io import BytesIO
 import CONF
 
 file_path = os.path.dirname(os.path.abspath(__file__))
@@ -48,7 +49,8 @@ async def run_vqa_from_client_query(img_bytes, query:bytes):
 	if not api_key:
 		return
 	query = query.decode(CONF.encoding)
-	img = Image.frombytes('RGB', (1280, 720), img_bytes)
+	img = Image.open(BytesIO(img_bytes))
+	# img = Image.frombytes('RGB', (1280, 720), img_bytes)
 	b = io.BytesIO()
 	img.save(b, 'png')
 	base64_image = base64.b64encode(b.getvalue()).decode('utf-8')

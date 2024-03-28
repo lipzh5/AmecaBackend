@@ -9,6 +9,7 @@ from insightface.data import get_image as ins_get_image
 from PIL import Image
 from numpy import asarray
 import os
+from io import BytesIO
 import time
 from Const import *
 # from collections import deque
@@ -69,7 +70,8 @@ FaceEmbdCacheObj.reset()
 def find_from_db(frame:bytes, ignore_ts=True):
 	"""if ignore_ts = False, then should check detect interval"""
 	# img_arr = np.asarray(Image.frombytes('RGB', IMG_SIZE, frame))
-	faces = app.get(np.asarray(Image.frombytes('RGB', IMG_SIZE, frame)))  # can be many faces in the current image
+	faces = app.get(np.asarray(Image.open(BytesIO(frame))))
+	# faces = app.get(np.asarray(Image.frombytes('RGB', IMG_SIZE, frame)))  # can be many faces in the current image
 	if not faces:
 		return None
 	embeds = [face.normed_embedding for face in faces]

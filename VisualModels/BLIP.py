@@ -7,6 +7,7 @@ from PIL import Image
 from transformers import BlipProcessor, BlipForQuestionAnswering
 import base64
 import io
+from io import BytesIO
 import torch
 
 import CONF
@@ -30,9 +31,10 @@ class BlipImageAnalyzer:
 	def on_vqa_task(self, img_bytes, query: bytes):
 		if CONF.debug:
 			decoded = base64.b64decode(img_bytes)  # msg[0] is base64 encoded
-			raw_image = Image.open(io.BytesIO(decoded)).convert('RGB')
+			raw_image = Image.open(BytesIO(decoded)).convert('RGB')
 		else:
-			raw_image = Image.frombytes('RGB', IMG_SIZE, img_bytes)
+			raw_image = Image.open(BytesIO(img_bytes))
+			# raw_image = Image.frombytes('RGB', IMG_SIZE, img_bytes)
 		return self.generate(raw_image, query.decode(encoding=CONF.encoding))
 
 

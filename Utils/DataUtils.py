@@ -42,7 +42,8 @@ emotion_labels[131] = Emotions.Dislike   # folding clothes
 emotion_labels[132] = Emotions.Scared   # folding napkins
 emotion_labels[204] = Emotions.Surprised  # opening present
 emotion_labels[210] = Emotions.Dislike    # peeling apples
-emotion_labels[218] = Emotions.Happy    # playing badminton
+emotion_labels[218] = Emotions.Surprised    # playing badminton
+emotion_labels[379] = Emotions.Dislike    # washing dishes
 emotion_labels[396] = Emotions.Confused  # writing
 
 
