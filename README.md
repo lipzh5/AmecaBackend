@@ -1,23 +1,3 @@
+# Demo
+[![official](https://github.com/lipzh5/Ameca.github.io/assets/19634813/69bb3dc9-2145-4cf2-94dc-0a7ebc40e7d4)](https://www.youtube.com/watch?v=OUDPcn_7pts&t=2s)
 
-## Setup
-- [create conda environment]()
-```
-conda create -n zmqbackend python=3.9
-conda activate zmqbackend
-```
-- [install necessary libs]()
-```
-pip install pyzmq
-pip install torch
-pip install numpy
-pip install Pillow
-# install hiera from source
-git clone https://github.com/facebookresearch/hiera.git
-cd hiera
-python setup.py build develop
-# action generation
-pip install openai
-# face recognition-insightface
-pip install onnxruntime-gpu  # or onnxruntime for cpu only inference
-pip install insightface
-```
