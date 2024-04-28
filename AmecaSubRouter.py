@@ -33,12 +33,12 @@ from PIL import Image
 }
 '''
 
-ip = '10.6.32.201'
+ip = '10.6.34.185'   # dynamic ip of the robot
 face_detect_addr = f'tcp://{ip}:6669'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2009' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2003' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 

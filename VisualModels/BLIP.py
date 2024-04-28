@@ -24,7 +24,7 @@ class BlipImageAnalyzer:
 		print(f'Blip model loaded to {self.device}')
 
 	def generate(self, raw_image: Image, question: str) -> str:
-		inputs = self.processor(raw_image, question, return_tensors='pt')
+		inputs = self.processor(raw_image, question, return_tensors='pt').to(self.device)
 		out = self.model.generate(**inputs, max_new_tokens=100, min_new_tokens=1)
 		return self.processor.decode(out[0], skip_special_tokens=True)
 
