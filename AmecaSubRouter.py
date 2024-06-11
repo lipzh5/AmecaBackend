@@ -33,12 +33,12 @@ from PIL import Image
 }
 '''
 
-ip = '10.6.34.185'   # dynamic ip of the robot
-face_detect_addr = f'tcp://{ip}:6669'   # face detection result from Ameca
+ip = '10.6.38.12'   # dynamic ip of the robot
+face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2003' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2008' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
@@ -48,18 +48,18 @@ ctx = Context.instance()
 async def on_vqa_task(*args):
 	frame = frame_buffer.consume_one_frame()  # TODO merge to blip_analyzer
 	if not frame:
-		return None
+		return ResponseCode.Fail, None
 	# res = await run_vqa_from_client_query(frame, *args)
 	# return res
-	return blip_analyzer.on_vqa_task(frame, *args)
+	return ResponseCode.Success, blip_analyzer.on_vqa_task(frame, *args)
 
 
 async def on_video_reg_task(*args):
-	return video_recognizer.on_video_recognition_task(frame_buffer)
+	return ResponseCode.Success, video_recognizer.on_video_recognition_task(frame_buffer)
 
 
 async def on_pose_gen_task(*args):
-	return video_recognizer.on_video_rec_posegen_task(frame_buffer)
+	return ResponseCode.Success, video_recognizer.on_video_rec_posegen_task(frame_buffer)
 	# human_action = video_recognizer.on_video_recognition_task(frame_buffer)
 	# if human_action is None:
 	# 	return None
@@ -70,13 +70,13 @@ async def on_pose_gen_task(*args):
 
 async def on_face_rec_task(*args):
 	try:
+		force_recog = int(args[1]) if len(args) > 1 else True
 		for i in range(CONF.face_reg_try_cnt):
-			found = find_from_db(frame_buffer.buffer_content[-i-1])
-			if found:
-				return found
+			return find_from_db(frame_buffer.buffer_content[-i-1], ignore_ts=force_recog)
+			# res_code, found = find_from_db(frame_buffer.buffer_content[-i-1], ignore_ts=force_recog)
 	except Exception as e:
 		print(str(e))
-		return None
+		return ResponseCode.Fail, None
 
 
 TASK_DISPATCHER = {
@@ -195,11 +195,11 @@ class SubRouter:
 				print('------')
 				identity = msg[0]
 				print('route visual task identity: ', identity)
-				ans = await self.deal_visual_task(*msg[1:])
+				res_code, ans = await self.deal_visual_task(*msg[1:])
 				if ans is None:
 					ans = 'None'
 				print(f'task answer:{ans} \n ------- ')
-				resp = [identity, ]
+				resp = [identity, res_code]
 				if isinstance(ans, list) or isinstance(ans, tuple):
 					resp.extend([item.encode(CONF.encoding) for item in ans])
 				else:

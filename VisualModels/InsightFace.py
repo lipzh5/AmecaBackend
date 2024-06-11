@@ -67,13 +67,15 @@ class FaceEmbdCacheObj:
 FaceEmbdCacheObj.reset()
 
 
-def find_from_db(frame:bytes, ignore_ts=True):
+def find_from_db(frame:bytes, ignore_ts=1):
 	"""if ignore_ts = False, then should check detect interval"""
 	# img_arr = np.asarray(Image.frombytes('RGB', IMG_SIZE, frame))
 	faces = app.get(np.asarray(Image.open(BytesIO(frame))))
 	# faces = app.get(np.asarray(Image.frombytes('RGB', IMG_SIZE, frame)))  # can be many faces in the current image
+	# if queried by human on purpose, then ignore_ts = True, otherwise in proactive model
+	fail_code = ResponseCode.Fail if ignore_ts>0 else ResponseCode.KeepSilent 
 	if not faces:
-		return None
+		return fail_code, None
 	embeds = [face.normed_embedding for face in faces]
 	embeds = np.array(embeds)
 	# print(f'query embeds: {embeds.shape}')
@@ -86,17 +88,17 @@ def find_from_db(frame:bytes, ignore_ts=True):
 	row, col = idx // len(faces), idx % len(faces)
 	# print('row: ', row, 'col: ', col)
 	if cos_sim[row, col] < COS_SIM_THRESHOLD:  # TODO sim Th
-		return None
+		return fail_code, None
 	found = FaceEmbdCacheObj.name_cache[row]
 	ts = FaceEmbdCacheObj.name_tstamp.get(found)
 	now = time.time()
 	if not ignore_ts and ts is not None and now - ts < SAY_HELLO_INTERVAL:
 		print(f'found {found} but has said hello {now - ts} ago')
-		return None
+		return fail_code, None
 	FaceEmbdCacheObj.name_tstamp[found] = now
 	# print('type if idx: ', type(idx), idx.shape)
 	print(f'found name: {found}')
-	return FaceEmbdCacheObj.name_cache[row]
+	return ResponseCode.Success, FaceEmbdCacheObj.name_cache[row]
 
 
 if __name__ == "__main__":

@@ -7,7 +7,12 @@ import zmq.asyncio
 from zmq.asyncio import Context
 # Note: execute on terminal at directory "DealerRouterTest"
 import sys, os
-sys.path.append(os.path.dirname(os.getcwd()))
+import os.path as osp
+cur_dir = osp.abspath(osp.dirname(__file__)) # osp.dirname(os.getcwd())
+sys.path.append(cur_dir)
+print('cur dir: ', cur_dir)
+sys.path.append(osp.join(cur_dir, '../'))
+
 
 from Utils import ImagePreprocess
 from Utils.FrameBuffer import frame_buffer
@@ -16,8 +21,8 @@ from VisualModels.Hiera import video_recognizer
 from memory_profiler import profile
 
 ctx = Context.instance()
-url = 'tcp://127.0.0.1:2000'
-sub_url = 'tcp://127.0.0.1:2001'
+url = 'tcp://127.0.0.1:3000'
+sub_url = 'tcp://127.0.0.1:3001'
 # sub and router
 
 
@@ -70,6 +75,8 @@ class SubRouter:
 			while True:
 				msg = await self.router_sock.recv_multipart()
 				identity = msg[0]
+				print(f'\n****\n msg: {msg}\n***')
+				print(f'msg -1: {msg[-1]}, {type(msg[-1])}, int msg-1: {int(msg[-1])}, int? {int(msg[-1])==1}')
 				print(f'msg revd: {len(msg)}', msg)
 				ans = await self.deal_query(*msg[1:])
 				if ans is None:
@@ -112,7 +119,7 @@ async def run_main():
 
 
 if __name__ == "__main__":
-	# sub_router = SubRouter()
-	# asyncio.run(sub_router.route_visual_task())
+	sub_router = SubRouter()
+	asyncio.run(sub_router.route_visual_task())
 	# asyncio.run(img_data_router())
-	asyncio.run(run_main())
+	# asyncio.run(run_main())

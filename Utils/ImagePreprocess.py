@@ -4,8 +4,9 @@
 import base64
 import os
 
-
-def convert_img_to_stream(img_path=os.path.join(os.getcwd(), '../Assets/img/image_phone.png')):
+import os.path as osp
+cur_dir = osp.abspath(osp.dirname(__file__))
+def convert_img_to_stream(img_path=osp.join(cur_dir, '../Assets/img/image_phone.png')):
 	with open(img_path, 'rb') as img_file:
 		encoded = base64.b64encode(img_file.read())
 		# print(type(encoded), len(encoded))

@@ -17,13 +17,20 @@ import sys
 # print('dir name: ', Path(os.getcwd()).parent.name)
 # Note: execute on terminal at directory "DealerRouterTest"
 sys.path.append(os.path.dirname(os.getcwd()))
+
+import os.path as osp
+cur_dir = osp.abspath(osp.dirname(__file__)) # osp.dirname(os.getcwd())
+sys.path.append(cur_dir)
+print('cur dir: ', cur_dir)
+sys.path.append(osp.join(cur_dir, '../'))
+
 from Utils import ImagePreprocess
 import time
 from memory_profiler import profile
 
 ctx = Context.instance()
-url = 'tcp://127.0.0.1:2000'
-pub_url = 'tcp://127.0.0.1:2001'
+url = 'tcp://127.0.0.1:3000'
+pub_url = 'tcp://127.0.0.1:3001'
 # pub and dealer (mimic request and data stream from Ameca)
 
 img_bytes = ImagePreprocess.convert_img_to_stream()
@@ -57,7 +64,7 @@ class PubDealer:
 	async def deal_visual_task(self):
 		try:
 			while True:
-				await self.deal_sock.send_multipart([b'VideoRecogPoseGen'])
+				await self.deal_sock.send_multipart([b'VideoRecogPoseGen', b'1'])
 				# await self.deal_sock.send_multipart([b'VQA', b'what is this in the picture?', str(time.time()).encode()])
 				print(f'deal visual task sent111')
 				msg = await self.deal_sock.recv_multipart()
@@ -99,9 +106,9 @@ async def run_main():
 
 
 if __name__ == "__main__":
-	# pub_dealer = PubDealer()
-	# asyncio.run(pub_dealer.deal_visual_task())
-	asyncio.run(run_main())
+	pub_dealer = PubDealer()
+	asyncio.run(pub_dealer.deal_visual_task())
+	# asyncio.run(run_main())
 	# loop = asyncio.get_event_loop()
 	# corou = loop.create_task(pub_dealer.deal_visual_task())
 

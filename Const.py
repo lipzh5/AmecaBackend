@@ -14,6 +14,12 @@ class VisualTasks:
 	VideoRecogPoseGen = 'VideoRecPoseGen'  # video recognition with pose generation
 	FaceRecognition = 'FaceRec'
 
+class ResponseCode:
+	KeepSilent = b'0' 
+	Success = b'1'
+	Fail = b'2'
+
+
 
 class Emotions:
 	Neutral = 0
