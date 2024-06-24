@@ -14,13 +14,13 @@ import time
 from Const import *
 # from collections import deque
 
-app = FaceAnalysis(providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])  # 'CUDAExecutionProvider'
+app = FaceAnalysis(providers=['CPUExecutionProvider', 'CUDAExecutionProvider'])  # 'CUDAExecutionProvider'
 app.prepare(ctx_id=0, det_size=(640, 640))
 
 
 FACE_DB_PATH = os.path.join(os.path.dirname(__file__), '../Assets/face_db')
 COS_SIM_THRESHOLD = 0.5
-SAY_HELLO_INTERVAL = 3 * 3600  # 3 HOURS
+SAY_HELLO_INTERVAL = 60 # 3 * 3600  # 3 HOURS
 
 
 class FaceEmbdCacheObj:

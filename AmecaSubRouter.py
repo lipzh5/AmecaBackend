@@ -4,6 +4,7 @@
 import asyncio
 # import io
 from io import BytesIO
+from collections import defaultdict
 
 import zmq
 import zmq.asyncio
@@ -15,11 +16,14 @@ from VisualModels.GPT4V import run_vqa_from_client_query
 from VisualModels.Hiera import video_recognizer
 from ActionGeneration import on_pose_generation
 from VisualModels.InsightFace import find_from_db
+from LanguageModels.ChatModels import generate_ans, llama_to_cpu
 import CONF
 from Const import *
 import time
 import base64
 from PIL import Image
+import logging
+log = logging.getLogger(__name__)
 
 # note: video capture needs configure video_capture node as follows
 '''
@@ -33,17 +37,28 @@ from PIL import Image
 }
 '''
 
-ip = '10.6.38.12'   # dynamic ip of the robot
+ip = '192.168.0.177'  # '10.6.39.231'   # dynamic ip of the robot
 face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2008' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2003' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
 ctx = Context.instance()
 
+LAST_QUERY_TS = defaultdict(float)
+MIN_QUERY_INTERVAL = 2.0
+
+
+def is_valid_query(task_type):
+	"""1. avoid queries with extremely high frequency"""
+	# last_ts = LAST_QUERY_TS.get(VisualTasks.VQA, 0)
+	now = time.time()
+	valid = now - LAST_QUERY_TS.get(task_type, 0) > MIN_QUERY_INTERVAL
+	LAST_QUERY_TS[task_type] = now 
+	return valid
 
 async def on_vqa_task(*args):
 	frame = frame_buffer.consume_one_frame()  # TODO merge to blip_analyzer
@@ -51,7 +66,9 @@ async def on_vqa_task(*args):
 		return ResponseCode.Fail, None
 	# res = await run_vqa_from_client_query(frame, *args)
 	# return res
-	return ResponseCode.Success, blip_analyzer.on_vqa_task(frame, *args)
+	print(f'args: {args} \n *******')
+	ans = blip_analyzer.on_vqa_task(frame, *args)
+	return ResponseCode.Success, generate_ans('vqa', ans, query=args[0].decode(encoding=CONF.encoding))
 
 
 async def on_video_reg_task(*args):
@@ -59,7 +76,10 @@ async def on_video_reg_task(*args):
 
 
 async def on_pose_gen_task(*args):
-	return ResponseCode.Success, video_recognizer.on_video_rec_posegen_task(frame_buffer)
+	llama_to_cpu()  # in case of cuda out of memory, delete this line if large memory is available
+	ans = video_recognizer.on_video_rec_posegen_task(frame_buffer)
+	# return ResponseCode.Success, ans (action, 'chat projects')
+	return ResponseCode.Success, generate_ans('action_recognition', ans[0])
 	# human_action = video_recognizer.on_video_recognition_task(frame_buffer)
 	# if human_action is None:
 	# 	return None
@@ -72,8 +92,9 @@ async def on_face_rec_task(*args):
 	try:
 		force_recog = int(args[1]) if len(args) > 1 else True
 		for i in range(CONF.face_reg_try_cnt):
-			return find_from_db(frame_buffer.buffer_content[-i-1], ignore_ts=force_recog)
-			# res_code, found = find_from_db(frame_buffer.buffer_content[-i-1], ignore_ts=force_recog)
+			res_code, found = find_from_db(frame_buffer.buffer_content[-i-1], ignore_ts=force_recog)
+			return res_code, generate_ans('face_recognition', found)
+			
 	except Exception as e:
 		print(str(e))
 		return ResponseCode.Fail, None
@@ -210,10 +231,13 @@ class SubRouter:
 
 	async def deal_visual_task(self, *args):
 		try:
+			# ts = time.time()
 			task_type = args[0].decode(CONF.encoding)
-			print('deal visual task type: ', task_type)
-			print('=====')
+			if not is_valid_query(task_type):
+				print(f'invalid query!!!! {task_type} \n **************')
+				return (ResponseCode.KeepSilent, None)
 			ans = await TASK_DISPATCHER[task_type](*args[1:])
+			# print(f'inference time for {task_type}: {time.time()-ts}') # around 0.05s
 			# ans = blip_analyzer.on_vqa_task(frame, args[1], debug=CONF.debug)
 			# print('deal visual task ans: ', ans)
 			return ans

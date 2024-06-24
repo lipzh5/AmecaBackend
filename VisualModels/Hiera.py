@@ -26,7 +26,7 @@ id_to_name_map = DataUtils.get_gt_labels_for_k400()
 class VideoRecognizer:
 	def __init__(self):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-		self.model = hiera.hiera_base_16x224(pretrained=True, checkpoint=CHECK_POINT)
+		self.model = hiera.hiera_base_16x224(pretrained=True, checkpoint=CHECK_POINT).cuda().eval()
 
 	@staticmethod
 	def get_processed_frames(frame_buffer):

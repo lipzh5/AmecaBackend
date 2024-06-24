@@ -19,7 +19,7 @@ MODEL_ID = 'Salesforce/blip-vqa-capfilt-large'
 class BlipImageAnalyzer:
 	def __init__(self):
 		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-		self.model = BlipForQuestionAnswering.from_pretrained(MODEL_ID).to(self.device)
+		self.model = BlipForQuestionAnswering.from_pretrained(MODEL_ID).to(self.device).eval()
 		self.processor = BlipProcessor.from_pretrained(MODEL_ID)
 		print(f'Blip model loaded to {self.device}')
 
