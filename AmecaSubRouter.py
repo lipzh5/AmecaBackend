@@ -42,7 +42,7 @@ face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2003' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2000' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
@@ -79,7 +79,7 @@ async def on_pose_gen_task(*args):
 	llama_to_cpu()  # in case of cuda out of memory, delete this line if large memory is available
 	ans = video_recognizer.on_video_rec_posegen_task(frame_buffer)
 	# return ResponseCode.Success, ans (action, 'chat projects')
-	return ResponseCode.Success, generate_ans('action_recognition', ans[0])
+	return ResponseCode.Success, (generate_ans('action_recognition', ans[0]), ans[1])
 	# human_action = video_recognizer.on_video_recognition_task(frame_buffer)
 	# if human_action is None:
 	# 	return None
