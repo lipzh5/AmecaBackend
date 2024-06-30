@@ -28,6 +28,12 @@ payload = {
 		"messages": [
 					{
 						"role": "user",
+					},
+					{
+						"role": "system",
+						"content": [{"type": "text",
+						"text": "You are an intelligent AI assistant, always ready to polish the answer to the visual-questions"
+						}],
 					}
 				],
 		"max_tokens": 300
