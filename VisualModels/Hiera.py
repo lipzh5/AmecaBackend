@@ -21,12 +21,12 @@ import random
 CHECK_POINT = 'mae_k400_ft_k400'
 
 id_to_name_map = DataUtils.get_gt_labels_for_k400()
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 
 class VideoRecognizer:
 	def __init__(self):
-		self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-		self.model = hiera.hiera_base_16x224(pretrained=True, checkpoint=CHECK_POINT).cuda().eval()
+		self.model = hiera.hiera_base_16x224(pretrained=True, checkpoint=CHECK_POINT).to(device).eval()
 
 	@staticmethod
 	def get_processed_frames(frame_buffer):
@@ -48,7 +48,7 @@ class VideoRecognizer:
 		# Normalize the clips TODO mean and std??
 		frames = frames - torch.tensor([0.45, 0.45, 0.45]).view(1, -1, 1, 1, 1)  # subtract mean
 		frames = frames / torch.tensor([0.225, 0.225, 0.225]).view(1, -1, 1, 1, 1)  # divide by std
-		return frames
+		return frames.to(device)
 
 	def recognize_action(self, frame_buffer):
 		frames = self.get_processed_frames(frame_buffer)

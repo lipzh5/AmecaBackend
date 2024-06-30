@@ -13,6 +13,11 @@ class VisualTasks:
 	VideoRecognition = 'VideoRec'
 	VideoRecogPoseGen = 'VideoRecPoseGen'  # video recognition with pose generation
 	FaceRecognition = 'FaceRec'
+	EmotionImitation = 'EmoImitation' 
+
+class NLPTask:
+	RAG = 'RAG'  # retrieve augmented generation task
+
 
 class ResponseCode:
 	KeepSilent = b'0' 
@@ -22,6 +27,7 @@ class ResponseCode:
 
 
 class Emotions:
+	Other = -1
 	Neutral = 0
 	Angry = 1
 	Confused = 2
@@ -34,6 +40,7 @@ class Emotions:
 
 
 EMOTION_TO_ANIM = {
+	Emotions.Other: ['Chat Expressions.dir/Chat_G2_Neutral.project',],
 	Emotions.Neutral: ['Chat Expressions.dir/Chat_G2_Neutral.project',],
 	Emotions.Angry: [
 		'Chat Expressions.dir/Chat_G2_Angry_1.project',

@@ -11,6 +11,10 @@ from numpy import asarray
 import os
 from io import BytesIO
 import time
+import os.path as osp
+cwd = osp.abspath(osp.dirname(__name__))
+import sys
+sys.path.append(cwd)
 from Const import *
 # from collections import deque
 
@@ -49,17 +53,27 @@ class FaceEmbdCacheObj:
 		embeddings = []
 		cls.name_cache = []
 		for (dirpath, dirnames, filenames) in os.walk(FACE_DB_PATH):
-			print(dirpath, dirnames)
-			print(filenames)
+			print(f'dirpath: {dirpath}, \n dirnames: {dirnames}')
+			print('----------')
+			print(f'filenames: {filenames}')
+			print('====================')
 			for filename in filenames:
-				image = Image.open(os.path.join(FACE_DB_PATH, filename))
-				faces = app.get(asarray(image))  # assume one face per image in the face db
+				image = Image.open(os.path.join(dirpath, filename))
+				faces = app.get(asarray(image.convert("RGB")))  # assume one face per image in the face db
+			
+				if not faces:
+					print(f'{filename} does not contain faces \n ************')
+					continue
 				embeddings.append(faces[0].normed_embedding)
 				name = os.path.splitext(filename)[0].split('_')
 				# name = filename.splitext()
 				# print(f'stripped name: {name}')
 				# name = name[0].split('_')
-				cls.name_cache.append(name[1])
+				try:
+					cls.name_cache.append(name[0])
+				except Exception as e:
+					print(str(e))
+					print(f'name error: {filename} \n #####')
 		cls.embed_cache = np.array(embeddings)
 		cls.name_tstamp = {}
 

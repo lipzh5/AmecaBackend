@@ -1,22 +1,28 @@
 # -*- coding:utf-8 -*-
 # @Author: Peizhen Li
 # @Desc: None
+import sys
+print(f'sys.path: {sys.path}')
 import asyncio
 # import io
 from io import BytesIO
 from collections import defaultdict
+import os
 
 import zmq
 import zmq.asyncio
 from zmq.asyncio import Context
 from Utils import ImagePreprocess
 from Utils.FrameBuffer import frame_buffer
-from VisualModels.BLIP import blip_analyzer
+# from VisualModels.BLIP import blip_analyzer
 from VisualModels.GPT4V import run_vqa_from_client_query
 from VisualModels.Hiera import video_recognizer
 from ActionGeneration import on_pose_generation
 from VisualModels.InsightFace import find_from_db
-from LanguageModels.ChatModels import generate_ans, llama_to_cpu
+from VisualModels.EmotionRec import emo_recognizer
+from Utils.OpenAIClient import client
+# from LanguageModels.ChatModels import generate_ans, llama_to_cpu (penny note: use gpt-4o for answer polish instead)
+from LanguageModels.RAG.main import RAGInfo  # for mq stuff training
 import CONF
 from Const import *
 import time
@@ -24,6 +30,10 @@ import base64
 from PIL import Image
 import logging
 log = logging.getLogger(__name__)
+rag_info = RAGInfo(use_public_embedding=True, top_k=3)
+
+# conda activate amecabackend
+# torchrun --nproc_per_node 1 AmecaSubRouter.py
 
 # note: video capture needs configure video_capture node as follows
 '''
@@ -37,12 +47,12 @@ log = logging.getLogger(__name__)
 }
 '''
 
-ip = '192.168.0.177'  # '10.6.39.231'   # dynamic ip of the robot
+ip = '10.6.37.252'   # dynamic ip of the robot
 face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2000' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2010' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
@@ -64,28 +74,32 @@ async def on_vqa_task(*args):
 	frame = frame_buffer.consume_one_frame()  # TODO merge to blip_analyzer
 	if not frame:
 		return ResponseCode.Fail, None
-	# res = await run_vqa_from_client_query(frame, *args)
-	# return res
-	print(f'args: {args} \n *******')
-	ans = blip_analyzer.on_vqa_task(frame, *args)
-	return ResponseCode.Success, generate_ans('vqa', ans, query=args[0].decode(encoding=CONF.encoding))
+	res = await run_vqa_from_client_query(frame, *args)
+	return ResponseCode.Success, res
+	# print(f'args: {args} \n *******')
+	# ans = blip_analyzer.on_vqa_task(frame, *args)
+	# return ResponseCode.Success, generate_ans('vqa', ans, query=args[0].decode(encoding=CONF.encoding))
 
-
-async def on_video_reg_task(*args):
+async def on_video_reg_task(*args):  # TODO penny:  not in use
 	return ResponseCode.Success, video_recognizer.on_video_recognition_task(frame_buffer)
 
 
 async def on_pose_gen_task(*args):
-	llama_to_cpu()  # in case of cuda out of memory, delete this line if large memory is available
+	# llama_to_cpu()  # in case of cuda out of memory, delete this line if large memory is available
 	ans = video_recognizer.on_video_rec_posegen_task(frame_buffer)
 	# return ResponseCode.Success, ans (action, 'chat projects')
-	return ResponseCode.Success, (generate_ans('action_recognition', ans[0]), ans[1])
-	# human_action = video_recognizer.on_video_recognition_task(frame_buffer)
-	# if human_action is None:
-	# 	return None
-
-	# poses = await on_pose_generation(human_action)
-	# return [human_action, *poses]
+	response = await client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": 
+				"""You are a friendly humanoid robot named Ameca. Always provide brief but precise response to the user.
+				Do mention the action provided by the user in your response, e.g., "I see you are reading a book, keep up the good job".
+				"""},
+                {"role": "user", "content": f"I am {ans[0]}"}
+            ]
+        )
+	return ResponseCode.Success, (response.choices[0].message.content, ans[1])
+	
 
 
 async def on_face_rec_task(*args):
@@ -93,11 +107,49 @@ async def on_face_rec_task(*args):
 		force_recog = int(args[1]) if len(args) > 1 else True
 		for i in range(CONF.face_reg_try_cnt):
 			res_code, found = find_from_db(frame_buffer.buffer_content[-i-1], ignore_ts=force_recog)
-			return res_code, generate_ans('face_recognition', found)
+			if res_code != ResponseCode.Success:
+				continue
+			response = await client.chat.completions.create(
+				model="gpt-4o",
+				messages=[
+					{"role": "system", "content": "You are a friendly humanoid robot named Ameca. Reply briefly with no more than 3 sentences"},
+					{"role": "user", "content": f"I am {found}"}
+				]
+			)
+			return res_code, response.choices[0].message.content 
 			
 	except Exception as e:
 		print(str(e))
+		import traceback
+		traceback.print_stack()
 		return ResponseCode.Fail, None
+
+async def on_emo_imitation_task(*args):
+	print(f'emotion recognition task!!! {args} \n ****')
+	frame = frame_buffer.consume_one_frame()
+	if not frame:
+		return ResponseCode.Fail, None
+	try:
+		response = await emo_recognizer.on_emotion_recog_task(frame)
+		return ResponseCode.Success, response  # (emo_anim, anslysis)
+	except Exception as e:
+		print(str(e))
+		print('==============')
+		import traceback
+		traceback.print_stack()
+		return ResponseCode.Fail, None
+
+
+async def on_info_retrieve_task(*args):
+	'''information retriece for staff training at MQ'''
+	try:
+		# print(args, type(args), args[0])
+		ans = await rag_info.get_response(args[0].decode(CONF.encoding))
+		return ResponseCode.Success, ans
+	except Exception as e:
+		print(f'****\n {str(e)} \n*****')
+		return ResponseCode.Fail, None
+	
 
 
 TASK_DISPATCHER = {
@@ -105,6 +157,8 @@ TASK_DISPATCHER = {
 	VisualTasks.VideoRecognition: on_video_reg_task,
 	VisualTasks.VideoRecogPoseGen: on_pose_gen_task,
 	VisualTasks.FaceRecognition: on_face_rec_task,
+	VisualTasks.EmotionImitation: on_emo_imitation_task,
+	NLPTask.RAG: on_info_retrieve_task, 
 }
 
 
@@ -228,6 +282,8 @@ class SubRouter:
 				await self.router_sock.send_multipart(resp)
 		except Exception as e:
 			print(str(e))
+			import traceback
+			traceback.print_stack()
 
 	async def deal_visual_task(self, *args):
 		try:
@@ -243,7 +299,7 @@ class SubRouter:
 			return ans
 		except Exception as e:
 			print(str(e))
-			return None
+			return ResponseCode.Fail, None
 		# return TASK_DISPATCHER[task_type](frame, *tuple(map(lambda x: x.decode(AmecaCONF.encoding), args[1:])))
 		# return blip_analyzer.on_vqa_task(frame, args[1].decode(), debug=AmecaCONF.debug)
 
@@ -260,6 +316,7 @@ async def run_sub_router():
 
 
 if __name__ == "__main__":
+	os.environ['TOKENIZERS_PARALLELISM']='false'
 	asyncio.run(run_sub_router())
 
 
