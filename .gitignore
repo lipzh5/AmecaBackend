@@ -2,3 +2,5 @@
 /Assets/
 *.xml
 /.idea/
+/Utils/openai_key.txt
+*.txt
