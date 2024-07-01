@@ -47,12 +47,12 @@ rag_info = RAGInfo(use_public_embedding=True, top_k=3)
 }
 '''
 
-ip = '10.6.37.252'   # dynamic ip of the robot
+ip = '10.6.39.214'   # dynamic ip of the robot
 face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2010' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2004' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
@@ -117,9 +117,11 @@ async def on_face_rec_task(*args):
 				]
 			)
 			return res_code, response.choices[0].message.content 
+		return ResponseCode.Fail, None
 			
 	except Exception as e:
 		print(str(e))
+		print(f'-------------')
 		import traceback
 		traceback.print_stack()
 		return ResponseCode.Fail, None
@@ -266,22 +268,29 @@ class SubRouter:
 		try:
 			while True:
 				msg = await self.router_sock.recv_multipart()
-				print('router sock recv msg: ', msg)
-				print('------')
 				identity = msg[0]
 				print('route visual task identity: ', identity)
-				res_code, ans = await self.deal_visual_task(*msg[1:])
-				if ans is None:
-					ans = 'None'
-				print(f'task answer:{ans} \n ------- ')
-				resp = [identity, res_code]
-				if isinstance(ans, list) or isinstance(ans, tuple):
-					resp.extend([item.encode(CONF.encoding) for item in ans])
-				else:
-					resp.append(ans.encode(CONF.encoding))
+				try:
+					res_code, ans = await self.deal_visual_task(*msg[1:])
+					if ans is None:
+						ans = 'None'
+					print(f'task answer:{ans} \n ------- ')
+					resp = [identity, res_code]
+					if isinstance(ans, list) or isinstance(ans, tuple):
+						resp.extend([item.encode(CONF.encoding) for item in ans])
+					else:
+						resp.append(ans.encode(CONF.encoding))
+				except Exception as e:
+					print(str(e))
+					print(f'msg: {msg}')
+					print('----------')
+					resp = [identity, ResponseCode.Fail, b'None']
+
 				await self.router_sock.send_multipart(resp)
+				
 		except Exception as e:
 			print(str(e))
+			print('-----router visual task line 293----')
 			import traceback
 			traceback.print_stack()
 
