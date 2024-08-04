@@ -16,20 +16,21 @@
 New members who are going to contribute something to **Humanoid Robotics** based on Ameca.
 
 ## Why a R&D playbook?
-- Help minimize the time consumption on finding relevant materials especially for new starters.
-- Record lessons learned from past experiences to facilitate knowledge sharing within our group
+- Help reduce the time spent finding relevant materials, especially for new starters.
+- Document lessons learned from past experiences to enhance knowledge sharing within our group.
 
 ## Things you need to know prior to coding
 
 - Read the documentation from Engineered Arts (
-[Engineerd Arts Uer Documentation](https://docs.engineeredarts.co.uk/)) thoroughly and familarize yourself about the web-based IDE first.
+[Engineerd Arts Uer Documentation](https://docs.engineeredarts.co.uk/)) thoroughly and familarize yourself with the web-based IDE first.
 
 - Speech recognition and text-to-speech functions are provided by Google Cloud and Amazon Web Services respectively. 
 - Basic text-only conversation is powered by ChatGPT.
-- Visual reasoning (e.g., VQA, Face Recognition, Action Recognition) and other customized functions (e.g., Emotion Imitation) developed by ourselves are powered by models hosed on our local server (with one Nvidia 4090Ti GPU inside). 
-- Data transmission between local server and Ameca is conducted through ZMQ (a python library). A general transmission framework for server has been built and available here: [Amecabackend](https://github.com/lipzh5/AmecaBackend).
+- Visual reasoning (e.g., VQA, Face Recognition, Action Recognition) and other customized functions (e.g., Emotion Imitation) developed by ourselves are powered by models hosted on our local server (with one Nvidia 4090Ti GPU inside). 
 
-- Have a basic idea of couroutine in python and know how to define it using **async/await**  (recommended reading: [Async IO in Python](https://realpython.com/async-io-python/)).
+- Data transmission between local server and Ameca is handled using ZMQ, a python library. A general transmission framework for the server has been developed and available here: [Amecabackend](https://github.com/lipzh5/AmecaBackend).
+
+- Have a basic understanding of couroutines in Python and how to define them using **async/await**  (recommended reading: [Async IO in Python](https://realpython.com/async-io-python/)).
 
 - Pay attention to the [script section](https://docs.engineeredarts.co.uk/user/scripts) of the documentation and learn how to send information and trigger functions beween script activities using **event**.
 
@@ -38,13 +39,13 @@ New members who are going to contribute something to **Humanoid Robotics** based
 - Feel free to contact @Penny if you have any questions or suggestions.
 
 ## Notes
-- Conduct comprehensive test for any new functions before important events to make sure that they are stable (do not stuck even in the worst cases) and do not conflict with existing functions.
+- Conduct comprehensive testing for any new functions before important events to ensure they are stable (i.e., do not stuck even under the worst conditions) and do not conflict with existing functions.
 
 ## Troubleshooting
-- [Issues and solutions for Staff Training Day, 2024](./Issues.md)
+- [Issues and solutions for Professional Staff Training Day, 2024](./Issues.md)
 
 ## Ameca Showcases
-- [Staff Training Day, FSE, 2024](https://www.linkedin.com/posts/macquarie-university-faculty-of-science-and-engineering_macquarieuniversity-mqschoolofcomputing-airobot-ugcPost-7214482532543709184-Khy4/?utm_source=share&utm_medium=member_desktop)
+- [Professional Staff Training Day, FSE, 2024](https://www.linkedin.com/posts/macquarie-university-faculty-of-science-and-engineering_macquarieuniversity-mqschoolofcomputing-airobot-ugcPost-7214482532543709184-Khy4/?utm_source=share&utm_medium=member_desktop)
 
 
 
