@@ -47,12 +47,12 @@ rag_info = RAGInfo(use_public_embedding=True, top_k=3)
 }
 '''
 
-ip = '10.6.39.214'   # dynamic ip of the robot
+ip = '10.6.37.218'   # dynamic ip of the robot
 face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2004' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2008' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
