@@ -39,7 +39,7 @@ New members who are going to contribute something to **Humanoid Robotics** based
 - Feel free to contact @Penny if you have any questions or suggestions.
 
 ## Notes
-- Conduct comprehensive testing for any new functions before important events to ensure they are stable (i.e., do not stuck even under the worst conditions) and do not conflict with existing functions.
+- Conduct comprehensive testing for any new functions before important events to ensure they are stable (i.e., do not get stuck even under the worst conditions) and do not conflict with existing functions.
 
 ## Troubleshooting
 - [Issues and solutions for Professional Staff Training Day, 2024](./Issues.md)
