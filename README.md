@@ -3,7 +3,7 @@
 
 
 ## Demo
-[![official](https://github.com/user-attachments/assets/5445ae81-7126-4d95-b45b-084012bcf6d4)](https://www.youtube.com/watch?v=OUDPcn_7pts&t=2s) 
+[](../Assets/demos/4functions.mp4)
 
 <!---[![official](https://github.com/lipzh5/Ameca.github.io/assets/19634813/69bb3dc9-2145-4cf2-94dc-0a7ebc40e7d4)](https://www.youtube.com/watch?v=OUDPcn_7pts&t=2s)-->
 
