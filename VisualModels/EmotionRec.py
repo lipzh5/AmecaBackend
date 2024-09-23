@@ -33,11 +33,42 @@ class EmotionRecognizer:
 					}
 				],
 		"max_tokens": 250,}
+    
+    async def on_emotion_recog_for_vle(self, frame:bytes):
+        img = Image.open(BytesIO(frame))
+        b = io.BytesIO()
+        img.save(b, 'png')
+        base64_image = base64.b64encode(b.getvalue()).decode('utf-8')
+       
+        content = [
+            {"type": "text", 
+            "text": """You are talking with the person in front of you and guess the person's emotion base on the observation in the form of image, candidate_emotions are: -1.not provided,
+             -1.other, 0.neutral, 1.surprise, 2.fear, 3.sadness, 4.joy, 5.disgust, 6.anger.
+             you should provide the emotion only, e.g., 1.surprise.
+             """},
+            {"type": "image_url",
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{base64_image}"
+            }},
+        ]
+        self.payload['messages'][0]['content'] = content
+        async with aiohttp.ClientSession() as session:
+            response = await session.post(url="https://api.openai.com/v1/chat/completions",
+                                        headers=self.headers,
+                                        json=self.payload)
+            res = await response.json()
+            msg = res['choices'][0]['message']['content']
+            emo_label = int(msg.split('.')[0])
+            emo_anim_lst = EMOTION_TO_ANIM.get(emo_label, [])
+            print(f'emo list: {emo_anim_lst} \n****')
+            if not emo_anim_lst:
+                return ''
+            return random.choice(emo_anim_lst)
 
 
     async def on_emotion_recog_task(self, frame:bytes):
         img = Image.open(BytesIO(frame))
-        img.save('debug.png')   # TODO 
+        # img.save('debug.png')   # TODO 
         b = io.BytesIO()
         # print(f'type of bytes io: {type(b)} \n *******')
         img.save(b, 'png')
@@ -46,7 +77,7 @@ class EmotionRecognizer:
         content = [
             {"type": "text", 
             "text": """You are talking with the person in front of you and guess the person's emotion base on the observation in the form of image, candidate_emotions are: -1.not provided,
-             0.neutral, 1.angry, 2.confused, 3.dislike, 4.fear, 5.happy, 6.sad, 7.scared, 8.surprised.
+             -1.other, 0.neutral, 1.surprise, 2.fear, 3.sadness, 4.joy, 5.disgust, 6.anger.
              you should provide the emotion first followed by some analysis, e.g.,
              1.happy
              you appears to be happy, i see your smile on your face.
@@ -62,7 +93,7 @@ class EmotionRecognizer:
                                         headers=self.headers,
                                         json=self.payload)
             res = await response.json()
-            print(f'response:::: {res} \n*****')
+            # print(f'response:::: {res} \n*****')
             msg = res['choices'][0]['message']['content']
             print(msg)
             spts = msg.split('\n')

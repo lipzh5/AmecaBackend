@@ -6,6 +6,13 @@ debug = False  # whether in debug mode or not
 encoding = 'utf-8'
 frame_buffer_max_len = 640
 
+diag_buffer_max_len = 8  # 20
+target_size = 160
+pretrained_path = 'princeton-nlp/sup-simcse-roberta-large'
+
+MAX_FACES = 100
+MAX_FRAMES = 100
+
 # face recognition
 # try matching face using the newest {face_reg_try_cnt} frames
 face_reg_try_cnt = 10 * 3
@@ -40,6 +47,9 @@ robot.apply_poses(['Mouth Surprise', 'eyelids_open']).
 robot.apply_poses(['Mouth Huh', 'eyelids_close']).
 """
 
+class ChatMode:
+	QA = 0     # default mode
+	VLE = 1    # vision language to facial expression in human-robot conversation
 
 
 

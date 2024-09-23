@@ -30,21 +30,20 @@ emotion_labels = [0 for _ in range(400)]
 # should be map to emotion category using some learned function
 # (e.g., a Neural Net, together with **context** or language supervision)
 # should be in-context emotion generation
-emotion_labels[4] = Emotions.Happy  # applying cream
-emotion_labels[57] = Emotions.Surprised  # clapping
-emotion_labels[79] = Emotions.Sad  # crying
+emotion_labels[4] = Emotions.Joy  # applying cream
+emotion_labels[57] = Emotions.Surprise  # clapping
+emotion_labels[79] = Emotions.Sadness  # crying
 emotion_labels[80] = Emotions.Fear  # curling hair
-emotion_labels[96] = Emotions.Dislike  # doing laundry
-emotion_labels[100] = Emotions.Happy   # drinking
-emotion_labels[119] = Emotions.Angry   # exercising arm
-emotion_labels[127] = Emotions.Surprised  # finger snapping
-emotion_labels[131] = Emotions.Dislike   # folding clothes
-emotion_labels[132] = Emotions.Scared   # folding napkins
-emotion_labels[204] = Emotions.Surprised  # opening present
-emotion_labels[210] = Emotions.Dislike    # peeling apples
-emotion_labels[218] = Emotions.Surprised    # playing badminton
-emotion_labels[379] = Emotions.Dislike    # washing dishes
-emotion_labels[396] = Emotions.Confused  # writing
+emotion_labels[96] = Emotions.Disgust  # doing laundry
+emotion_labels[100] = Emotions.Joy   # drinking
+emotion_labels[119] = Emotions.Anger   # exercising arm
+emotion_labels[127] = Emotions.Surprise  # finger snapping
+emotion_labels[131] = Emotions.Disgust   # folding clothes
+
+emotion_labels[204] = Emotions.Surprise  # opening present
+emotion_labels[210] = Emotions.Disgust    # peeling apples
+emotion_labels[218] = Emotions.Surprise    # playing badminton
+emotion_labels[379] = Emotions.Disgust    # washing dishes
 
 
 

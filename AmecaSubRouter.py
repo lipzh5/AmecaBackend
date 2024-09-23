@@ -14,12 +14,15 @@ import zmq.asyncio
 from zmq.asyncio import Context
 from Utils import ImagePreprocess
 from Utils.FrameBuffer import frame_buffer
+from Utils.DialogueBuffer import diag_buffer
 # from VisualModels.BLIP import blip_analyzer
 from VisualModels.GPT4V import run_vqa_from_client_query
 from VisualModels.Hiera import video_recognizer
 from ActionGeneration import on_pose_generation
 from VisualModels.InsightFace import find_from_db
 from VisualModels.EmotionRec import emo_recognizer
+from VisualModels.yolov7_main.fall_detect import fall_detector
+from MultimodalModels.vle_model import vle_task_dealer
 from Utils.OpenAIClient import client
 # from LanguageModels.ChatModels import generate_ans, llama_to_cpu (penny note: use gpt-4o for answer polish instead)
 from LanguageModels.RAG.main import RAGInfo  # for mq stuff training
@@ -47,12 +50,12 @@ rag_info = RAGInfo(use_public_embedding=True, top_k=3)
 }
 '''
 
-ip = '10.6.37.218'   # dynamic ip of the robot
+ip = '10.6.37.99'   # dynamic ip of the robot
 face_detect_addr = f'tcp://{ip}:6666'   # face detection result from Ameca
 vsub_addr = f'tcp://{ip}:5000'  # From Ameca, 5000: mjpeg
 # vsub_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
 # vsub_sync_addr = 'tcp://10.126.110.67:5555'  # video capture data subscription
-vtask_deal_addr = f'tcp://{ip}:2008' #'tcp://10.126.110.67:2006'
+vtask_deal_addr = f'tcp://{ip}:2004' #'tcp://10.126.110.67:2006'
 # vsub_mjpeg_addr = f'tcp://{ip}:5000'  # mjpeg From Ameca
 
 
@@ -141,6 +144,20 @@ async def on_emo_imitation_task(*args):
 		traceback.print_stack()
 		return ResponseCode.Fail, None
 
+async def on_fall_detection_task(*args):
+	# response = '1'
+	ans = fall_detector.detect(frame_buffer)
+	response = '1' if ans else '0'
+	return ResponseCode.Success, response
+
+
+async def on_vle_task(*args):
+	utterance, ts_end, duration, from_ameca = args
+	print(f'ts_end :{ts_end}, duration: {duration} \n***** ')
+	response_code, emo_anim = await vle_task_dealer.on_vle_task(utterance, ts_end, duration, from_ameca, diag_buffer)
+	return response_code, emo_anim 
+
+
 
 async def on_info_retrieve_task(*args):
 	'''information retriece for staff training at MQ'''
@@ -160,7 +177,9 @@ TASK_DISPATCHER = {
 	VisualTasks.VideoRecogPoseGen: on_pose_gen_task,
 	VisualTasks.FaceRecognition: on_face_rec_task,
 	VisualTasks.EmotionImitation: on_emo_imitation_task,
+	VisualTasks.FallDetection: on_fall_detection_task,
 	NLPTask.RAG: on_info_retrieve_task, 
+	MultimodalTasks.VLE: on_vle_task, 
 }
 
 
@@ -298,9 +317,9 @@ class SubRouter:
 		try:
 			# ts = time.time()
 			task_type = args[0].decode(CONF.encoding)
-			if not is_valid_query(task_type):
-				print(f'invalid query!!!! {task_type} \n **************')
-				return (ResponseCode.KeepSilent, None)
+			# if not is_valid_query(task_type):
+			# 	print(f'invalid query!!!! {task_type} \n **************')
+			# 	return (ResponseCode.KeepSilent, None)
 			ans = await TASK_DISPATCHER[task_type](*args[1:])
 			# print(f'inference time for {task_type}: {time.time()-ts}') # around 0.05s
 			# ans = blip_analyzer.on_vqa_task(frame, args[1], debug=CONF.debug)
@@ -320,8 +339,8 @@ async def run_sub_router():
 	# await asyncio.gather(task)
 	task1 = loop.create_task(sub_router.sub_vcap_data())
 	task2 = loop.create_task(sub_router.route_visual_task())
-	task3 = loop.create_task(sub_router.sub_face_detect_data())
-	await asyncio.gather(task1, task2, task3)
+	# task3 = loop.create_task(sub_router.sub_face_detect_data())
+	await asyncio.gather(task1, task2)
 
 
 if __name__ == "__main__":
