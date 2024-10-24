@@ -64,6 +64,8 @@ Note test state: preliminary (1), stable (2)
     Eye Look At.py (consumer): self.talking  # self.consumer.active = None if self.talking
     Torso Look At.py (consumerref),    # tick fps: 20, will cause inconsistant look around if fps=5
     Neck Look At.py (consumerref),     # tick fps: 20, will cause inconsistant look around if fps=5
+    
+    # contributor.LookAtItem
     ```
     - Test: 1
 
