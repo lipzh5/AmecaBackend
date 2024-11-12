@@ -93,7 +93,6 @@ EMOTION_TO_ANIM = {
 		'Chat Expressions.dir/Chat_G2_Angry_3.project',],
 
 	# Emotions.Confused: ['Chat Expressions.dir/Chat_G2_Confused_1.project',],
-	
 	# Emotions.Scared: ['Chat Expressions.dir/Chat_G2_Scared_1.project',],
 
 }
