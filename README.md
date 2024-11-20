@@ -1,5 +1,5 @@
 ## News
-[Humanoid R&D Playbook](DEBUG/Humanoid R&D Playbook.md) released!
+[Humanoid R&D Playbook](./DEBUG/Humanoid R&D Playbook.md) released!
 
 
 ## Demo
