@@ -15,5 +15,4 @@
 Current functions include **face recognition**, **visual question answering**, **action recognition**, **Emotion/Facial Expression Imitation** .
 
 ## Disclaimer
-This is not an official product of Engineered Arts. External support is not guaranteed. If you have any questions or encounter issues, please file a GitHub issue.
-
+This repository is created for research purposes and is not an official product of Engineered Arts. If you have any questions or encounter issues, please submit a GitHub issue.
