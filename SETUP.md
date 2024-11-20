@@ -6,8 +6,8 @@ conda activate zmqbackend
 ```
 - [install necessary libs]()
 ```
-git clone https://github.com/lipzh5/AmecaBackend.git
-cd AmecaBackend
+git clone https://github.com/lipzh5/HumanoidBackend.git
+cd HumanoidBackend
 pip install -r requirements.txt
 
 # install hiera from source
