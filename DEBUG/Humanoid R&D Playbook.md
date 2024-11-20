@@ -1,5 +1,5 @@
 
-# Ameca R&D Playbook
+# Humanoid R&D Playbook
 
 ## Table of Contents
 - [Who is this document for?](#who-is-this-document-for)
@@ -7,7 +7,7 @@
 - [Things you need to know prior to coding](#things-you-need-to-know-prior-to-coding)
 - [Notes](#notes)
 - [Troubleshooting](#troubleshooting)
-- [Ameca Showcases](#ameca-showcases)
+- [Humanoid Showcases](#ameca-showcases)
 - [FAQs](#faqs)
 - [Acknowledgements](#acknowledgements)
 - [Citing](#citing)
@@ -44,7 +44,7 @@ New members who are going to contribute something to **Humanoid Robotics** based
 ## Troubleshooting
 - [Issues and solutions for Professional Staff Training Day, 2024](./Issues.md)
 
-## Ameca Showcases
+## Humanoid Showcases
 - [Professional Staff Training Day, FSE, 2024](https://www.linkedin.com/posts/macquarie-university-faculty-of-science-and-engineering_macquarieuniversity-mqschoolofcomputing-airobot-ugcPost-7214482532543709184-Khy4/?utm_source=share&utm_medium=member_desktop)
 
 
